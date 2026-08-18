@@ -1,0 +1,4 @@
+interface:
+  display_name: "WechatExporter"
+  short_description: "Use installed WechatExporter safely or guide official setup"
+  default_prompt: "Use $wechat-exporter to check setup and authorization, then safely inspect or export my local WeChat data."
