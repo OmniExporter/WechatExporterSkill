@@ -119,7 +119,7 @@ Update the client mirror after an intentional Skill change:
 python .\scripts\sync_client_mirror.py --write
 ```
 
-This repository is the canonical source. The copy at `WechatExporter/.agents/skills/wechat-exporter` is a generated, hash-pinned build mirror and must not be edited manually.
+This repository is the canonical source. The copy at `WechatExporterWinClient-py/.agents/skills/wechat-exporter` is a generated, hash-pinned build mirror and must not be edited manually.
 
 ## License
 

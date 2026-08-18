@@ -119,7 +119,7 @@ python .\scripts\sync_client_mirror.py --check
 python .\scripts\sync_client_mirror.py --write
 ```
 
-本仓库是 Skill 的唯一维护源。`WechatExporter/.agents/skills/wechat-exporter` 中的副本是构建时使用的哈希锁定镜像，不应手工修改。
+本仓库是 Skill 的唯一维护源。`WechatExporterWinClient-py/.agents/skills/wechat-exporter` 中的副本是构建时使用的哈希锁定镜像，不应手工修改。
 
 ## 开源许可证
 

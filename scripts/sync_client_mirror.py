@@ -1,4 +1,4 @@
-"""Synchronize or verify the generated Skill mirror in WechatExporter."""
+"""Synchronize or verify the generated Skill mirror in the Windows client."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ def _resolve_client_root(value: str | None) -> Path:
     return (
         Path(value).expanduser().resolve()
         if value
-        else (REPO_ROOT.parent / "WechatExporter").resolve()
+        else (REPO_ROOT.parent / "WechatExporterWinClient-py").resolve()
     )
 
 
@@ -80,18 +80,23 @@ def check_mirror(client_root: Path, digest: str) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Synchronize the canonical Skill into the WechatExporter build mirror"
+        description="Synchronize the canonical Skill into the WechatExporter Windows client build mirror"
     )
     action = parser.add_mutually_exclusive_group(required=True)
     action.add_argument("--check", action="store_true", help="verify without writing")
     action.add_argument("--write", action="store_true", help="update mirror and digest")
-    parser.add_argument("--client-root", help="override the sibling WechatExporter path")
+    parser.add_argument(
+        "--client-root",
+        help="override the sibling WechatExporterWinClient-py path",
+    )
     options = parser.parse_args(argv)
 
     digest = validate()
     client_root = _resolve_client_root(options.client_root)
     if not (client_root / "pyproject.toml").is_file():
-        raise FileNotFoundError(f"WechatExporter client repository not found: {client_root}")
+        raise FileNotFoundError(
+            f"WechatExporter Windows client repository not found: {client_root}"
+        )
     if options.write:
         write_mirror(client_root, digest)
     else:
