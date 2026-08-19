@@ -1,11 +1,11 @@
 ---
 name: wechat-exporter
-description: Safely bootstrap and fully operate the official WechatExporter Windows client through MCP tools, its authenticated localhost API, or CLI. Use for verified installation and setup recovery, product-license or account preflight, sessions, unread or incremental messages, history, search, contacts, favorites, chat maps, official accounts and articles, locally observed WeChat Channels candidates/cards/downloads, group members, statistics, and scoped local exports.
+description: Safely bootstrap and fully operate the official WechatExporter Windows client through its bilingual desktop GUI, MCP tools, authenticated localhost API, or CLI. Use for verified installation and setup recovery, product-license or account preflight, sessions, unread or incremental messages, history, search, contacts, favorites, chat maps, official accounts and articles, locally observed WeChat Channels candidates/cards/downloads, group members, statistics, and scoped local exports.
 ---
 
 # WechatExporter
 
-Use the smallest interface and data scope that satisfies the request. Prefer MCP tools when available, use the authenticated localhost API for program integrations, and use the CLI for terminal workflows or capabilities that MCP does not expose.
+Use the smallest interface and data scope that satisfies the request. Prefer the GUI for user-driven browsing, statistics, and exports; prefer MCP for agent workflows, the authenticated localhost API for program integrations, and the CLI for terminal maintenance or capabilities that other interfaces do not expose.
 
 This open-source Skill contains usage instructions and a deterministic Windows bootstrap script. It does not contain the WechatExporter desktop application or a product license.
 
@@ -22,7 +22,7 @@ This open-source Skill contains usage instructions and a deterministic Windows b
 - Never direct users to third-party installers, mirrors, cracked builds, or license bypasses. The Skill is open source; the desktop application and its commercial authorization are separate products.
 - Do not treat the website as a WeChat data interface. Authorized WeChat data access remains local through MCP, the localhost API, or the CLI.
 
-Read [references/setup.md](references/setup.md) for bootstrap states, commands, project configuration, and authorization handoff. For a packaged Windows installation, use the `WechatExporterCLI.exe` beside `WechatExporter.exe`; do not rename, move, or assume the source-install command `wechat-exporter` is on `PATH`. The GUI invokes this sibling CLI for initialization, exports, downloads, and the local API.
+Read [references/setup.md](references/setup.md) for bootstrap states, commands, project configuration, and authorization handoff. For a packaged Windows installation, use the `WechatExporterCLI.exe` beside `WechatExporter.exe`; do not rename, move, or assume the source-install command `wechat-exporter` is on `PATH`. The GUI uses the shared application service for data queries and the sibling CLI for initialization, long-running exports/downloads, and the local API.
 
 Use the references by task:
 
@@ -53,7 +53,7 @@ Use the references by task:
 ## Workflow
 
 1. Detect the desktop client and complete the consent-based bootstrap only when needed. If the result is `authorization_required`, launch the GUI and guide the user to account registration or sign-in, the eligible 7-day trial, or pricing; wait for the user to complete the website flow.
-2. Select MCP, API, or CLI according to the request and run the applicable authorization/account preflight.
+2. Select GUI, MCP, API, or CLI according to the request and run the applicable authorization/account preflight. For a nontechnical user, direct them to **Chats** or **Data Tools** instead of asking them to run a command.
 3. Resolve the intended chat with `wechat_sessions` or `wechat_contacts` when a display name is ambiguous.
 4. Use a focused read tool:
    - `wechat_unread` for current unread totals and sessions.

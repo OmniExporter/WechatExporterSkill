@@ -2,7 +2,7 @@
 
 English | [简体中文](README.zh-CN.md)
 
-An open-source Agent Skill that helps AI agents use the WechatExporter Windows desktop application safely through MCP, its authenticated localhost API, or the command-line interface.
+An open-source Agent Skill that helps AI agents use the WechatExporter Windows desktop application safely through its bilingual GUI, MCP, authenticated localhost API, or command-line interface.
 
 [Download WechatExporter](https://omniexporter.com/downloads) · [Plans and pricing](https://omniexporter.com/pricing) · [Official website](https://omniexporter.com)
 
@@ -14,9 +14,10 @@ An open-source Agent Skill that helps AI agents use the WechatExporter Windows d
 - Detects the official Windows client in bounded locations and, after explicit consent, downloads, verifies, and starts its interactive installer.
 - Writes a non-secret project-local MCP hint so an agent can reuse the exact packaged CLI path.
 - Discovers local WeChat accounts that the user has explicitly configured.
-- Works with sessions, messages, contacts, official accounts, Channels candidates, group members, statistics, and favorites.
+- Guides nontechnical users to the GUI's Chats and Data Tools pages for new messages, contacts, group members, statistics, Favorites, and chat mapping without terminal commands.
+- Works with the same data through MCP, the authenticated localhost API, or CLI when automation is appropriate.
 - Guides controlled exports of chats, articles, and videos.
-- Provides exact guidance for MCP, the authenticated localhost API, and the packaged Windows CLI.
+- Provides exact guidance for the GUI, MCP, the authenticated localhost API, and the packaged Windows CLI.
 - Protects local WeChat data, application credentials, and licensing secrets.
 
 The Skill is open source. The WechatExporter desktop application and its commercial authorization are separate products.

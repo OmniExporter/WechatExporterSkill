@@ -2,7 +2,7 @@
 
 [English](README.md) | 简体中文
 
-这是一个开源的 Agent Skill，用于指导 AI 助手通过 MCP、经过身份验证的本地 API 或命令行接口，安全地使用 WechatExporter Windows 桌面程序。
+这是一个开源的 Agent Skill，用于指导 AI 助手通过中英文桌面界面、MCP、经过身份验证的本地 API 或命令行接口，安全地使用 WechatExporter Windows 桌面程序。
 
 [下载 WechatExporter](https://omniexporter.com/downloads) · [套餐与价格](https://omniexporter.com/pricing) · [官方网站](https://omniexporter.com)
 
@@ -14,9 +14,10 @@
 - 在限定位置检测官方 Windows 客户端，并在用户明确同意后下载、校验和启动交互式安装程序。
 - 写入不含机密的项目级 MCP 提示，让 AI 助手后续复用准确的打包版 CLI 路径。
 - 发现用户明确配置过的本地微信账号。
-- 查询会话、消息、联系人、公众号、视频号候选数据、群成员、统计信息和收藏数据。
+- 引导普通用户直接使用 GUI 的“会话”和“数据工具”，无需命令行即可查看新消息、联系人、群成员、统计、收藏和聊天映射。
+- 需要自动化时，通过 MCP、经过身份验证的本地 API 或 CLI 访问同一套数据。
 - 指导用户以可控方式导出聊天记录、文章和视频。
-- 提供准确的 MCP、本地认证 API 和 Windows 命令行调用说明。
+- 提供准确的 GUI、MCP、本地认证 API 和 Windows 命令行调用说明。
 - 保护本地微信数据、应用凭据和许可证相关机密。
 
 Skill 本身是开源的；WechatExporter 桌面程序及其商业授权是独立产品。
