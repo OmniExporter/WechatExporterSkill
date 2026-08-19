@@ -119,7 +119,10 @@ WechatExporterSkill/
 │       ├── scripts/
 │       │   └── bootstrap_windows.ps1
 │       └── references/
+│           ├── api.md
+│           ├── cli.md
 │           ├── interfaces.md
+│           ├── mcp.md
 │           └── setup.md
 ├── scripts/
 │   ├── sync_client_mirror.py
@@ -144,7 +147,7 @@ python .\scripts\validate_skill.py
 python .\scripts\test_bootstrap.py
 ```
 
-检查 WechatExporter 桌面工程中的镜像副本及其内容哈希是否与源文件完全一致：
+检查 CLI/MCP/API 文档与客户端接口是否一致，并校验桌面工程镜像副本及其内容哈希：
 
 ```powershell
 python .\scripts\sync_client_mirror.py --check

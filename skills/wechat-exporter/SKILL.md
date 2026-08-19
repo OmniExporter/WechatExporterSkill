@@ -1,6 +1,6 @@
 ---
 name: wechat-exporter
-description: Safely bootstrap the official WechatExporter Windows client, configure its local MCP command, and query, search, analyze, or export a user's authorized local WeChat data through MCP tools, localhost API, or CLI. Use for installation detection, consent-based verified download or setup recovery, product-license preflight or recovery, account discovery, chats, messages, contacts, official accounts and articles, locally observed WeChat Channels candidates or downloads, group members, statistics, favorites, chat maps, and local exports.
+description: Safely bootstrap and fully operate the official WechatExporter Windows client through MCP tools, its authenticated localhost API, or CLI. Use for verified installation and setup recovery, product-license or account preflight, sessions, unread or incremental messages, history, search, contacts, favorites, chat maps, official accounts and articles, locally observed WeChat Channels candidates/cards/downloads, group members, statistics, and scoped local exports.
 ---
 
 # WechatExporter
@@ -22,7 +22,14 @@ This open-source Skill contains usage instructions and a deterministic Windows b
 - Never direct users to third-party installers, mirrors, cracked builds, or license bypasses. The Skill is open source; the desktop application and its commercial authorization are separate products.
 - Do not treat the website as a WeChat data interface. Authorized WeChat data access remains local through MCP, the localhost API, or the CLI.
 
-Read [references/setup.md](references/setup.md) for bootstrap states, commands, project configuration, and authorization handoff. For a packaged Windows installation, use the `WechatExporterCLI.exe` beside `WechatExporter.exe`; do not rename, move, or assume the source-install command `wechat-exporter` is on `PATH`. The GUI invokes this sibling CLI for initialization, exports, downloads, and the local API. Read [references/interfaces.md](references/interfaces.md) for exact packaged and source commands.
+Read [references/setup.md](references/setup.md) for bootstrap states, commands, project configuration, and authorization handoff. For a packaged Windows installation, use the `WechatExporterCLI.exe` beside `WechatExporter.exe`; do not rename, move, or assume the source-install command `wechat-exporter` is on `PATH`. The GUI invokes this sibling CLI for initialization, exports, downloads, and the local API.
+
+Use the references by task:
+
+- Read [references/interfaces.md](references/interfaces.md) to select MCP, API, CLI, or GUI and apply the common preflight.
+- Read [references/mcp.md](references/mcp.md) before an MCP workflow; it contains every exposed tool, parameter, side effect, and fallback.
+- Read [references/cli.md](references/cli.md) before invoking a CLI command; it covers all top-level commands and their options.
+- Read [references/api.md](references/api.md) when starting or integrating the authenticated localhost API; it contains every route and request shape.
 
 ## Preconditions
 
@@ -49,15 +56,19 @@ Read [references/setup.md](references/setup.md) for bootstrap states, commands, 
 2. Select MCP, API, or CLI according to the request and run the applicable authorization/account preflight.
 3. Resolve the intended chat with `wechat_sessions` or `wechat_contacts` when a display name is ambiguous.
 4. Use a focused read tool:
+   - `wechat_unread` for current unread totals and sessions.
+   - `wechat_new_messages` for changed-session summaries since the previous checkpoint; state clearly that it writes a per-account checkpoint and does not return every intervening message.
    - `wechat_history` for one chat.
    - `wechat_search` for keyword search across one, several, or all chats.
+   - `wechat_contacts`, `wechat_favorites`, or `wechat_chat_map` for identity and local collection lookup.
    - `wechat_official_accounts` to resolve a locally stored official account before exporting articles.
    - `wechat_finder_candidates` for Channels accounts observed in local cache, chat cards, or favorites. State that it is not a complete following list.
+   - `wechat_finder_video_cards` to inspect safe local card metadata before choosing exact video object IDs.
    - `wechat_group_members` for one group.
    - `wechat_stats` for aggregate analysis.
 5. Summarize only the fields relevant to the user's question and preserve timestamps and chat scope.
 6. Use `wechat_export_chat` only when one chat file is requested. Use `wechat_export_all` or `wechat_export_articles` only after explicit approval for the larger write/network operation.
-7. Use `wechat_download_finder_video` only after explicit approval and after the user confirms the target video is playing in Windows WeChat. For card batches or account-page scans, use the documented CLI workflow with bounded scope and the same explicit approval. Report output paths and failures.
+7. Use `wechat_download_finder_video` only after explicit approval and after the user confirms the target video is playing in Windows WeChat. Use `wechat_download_finder_cards` only with selected object IDs unless the user explicitly requests all locally listed cards. Use `wechat_download_finder_account` only after confirming the exact account page is open and warning that scanning needs exclusive mouse control. Report output paths and failures.
 
 ## Query guidance
 
@@ -67,8 +78,9 @@ Read [references/setup.md](references/setup.md) for bootstrap states, commands, 
 - Supported message filters are `text`, `image`, `voice`, `video`, `sticker`, `location`, `link`, `file`, `call`, and `system`.
 - If a tool reports an unresolved chat, search contacts/sessions for the internal `username` and retry with that exact value.
 - Treat `wechat_finder_candidates.is_following_list=false` as authoritative; never present candidates as confirmed followed accounts.
+- Treat `wechat_new_messages` as changed-session detection: its first call records a checkpoint and returns current unread sessions; subsequent calls return one latest-message summary per changed session. Use `wechat_history` when the user needs every message.
 - Prefer incremental/resume modes for repeat downloads and a specific object/account over an unbounded `--all` operation.
 
 ## Interface fallback
 
-Read [references/interfaces.md](references/interfaces.md) when MCP tools are unavailable, when building an HTTP integration, or when exact CLI/API parameters are needed.
+If an installed client does not expose a documented MCP tool, verify its version and use the equivalent authenticated API or CLI workflow. Do not invent tool names or silently substitute a broader operation.

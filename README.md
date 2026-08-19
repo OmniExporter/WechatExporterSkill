@@ -119,7 +119,10 @@ WechatExporterSkill/
 │       ├── scripts/
 │       │   └── bootstrap_windows.ps1
 │       └── references/
+│           ├── api.md
+│           ├── cli.md
 │           ├── interfaces.md
+│           ├── mcp.md
 │           └── setup.md
 ├── scripts/
 │   ├── sync_client_mirror.py
@@ -144,7 +147,7 @@ Run the offline bootstrap smoke tests (they do not download or install anything)
 python .\scripts\test_bootstrap.py
 ```
 
-Check that the WechatExporter desktop repository contains the exact generated mirror and matching content hash:
+Check CLI/MCP/API documentation parity and verify that the desktop repository contains the exact generated mirror and matching content hash:
 
 ```powershell
 python .\scripts\sync_client_mirror.py --check

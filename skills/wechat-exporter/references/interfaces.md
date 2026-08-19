@@ -1,140 +1,82 @@
-# WechatExporter interfaces
+# Interface selection and preflight
 
-## Installation and official acquisition
+## Contents
 
-This Skill does not contain the desktop application. If neither an existing MCP configuration nor a user-supplied installation path resolves `WechatExporterCLI.exe`, run the bundled `scripts/bootstrap_windows.ps1` in its default read-only mode. Read [setup.md](setup.md) for its bounded discovery, consent, integrity, installer, project-configuration, and authorization states.
+- Installation and executable selection
+- Interface decision table
+- Authorization and account preflight
+- Capability routing
+- Fallback and error handling
+
+## Installation and executable selection
+
+This Skill does not contain the desktop application. If neither an existing MCP configuration nor a user-supplied installation path resolves `WechatExporterCLI.exe`, run the bundled `scripts/bootstrap_windows.ps1` in its default read-only mode. Read [setup.md](setup.md) for the bounded detection and consent flow.
 
 - Official download: <https://omniexporter.com/downloads>
 - Plans and pricing: <https://omniexporter.com/pricing>
+- Packaged Windows command: `<install-dir>\WechatExporterCLI.exe`
+- Python source command: `wechat-exporter`
 
-Do not download or run an installer without explicit user confirmation. The official package is currently unsigned; pass `-AcceptUnsignedInstaller` only after explaining that risk and receiving explicit acceptance. The bootstrap accepts only the official HTTPS endpoint and verifies exact size, SHA-256, and signature state before starting the interactive installer. Do not use third-party mirrors or treat the open-source Skill as a replacement for a valid product license. After installation, use the exact CLI located beside `WechatExporter.exe`; do not move it out of the installed directory.
+Do not download or run an installer without explicit confirmation. Keep `WechatExporter.exe`, `WechatExporterCLI.exe`, and `_internal` in their distributed locations. Use the full packaged CLI path in configuration and examples.
 
-Choose the command that matches the installation:
+## Interface decision table
 
-- Packaged Windows ZIP or Setup: `<install-dir>\WechatExporterCLI.exe`
-- Python source installation: `wechat-exporter`
+| Need | Preferred interface | Reason |
+|---|---|---|
+| Agent reads, searches, analyzes, or performs a supported export | MCP stdio | Structured schemas and explicit read/write annotations |
+| Application integration or background jobs | Authenticated localhost API | Stable HTTP requests, OpenAPI, and job polling |
+| Full option surface, maintenance, initialization, or license recovery | CLI | Complete command coverage and interactive secure prompts |
+| Registration, sign-in, trial, purchase, account initialization | GUI plus official website | User-controlled commercial and credential flow |
 
-Use the full executable path in MCP client configuration. The examples below use `WechatExporterCLI.exe`; replace it with `wechat-exporter` for a source installation.
-
-For a packaged installation, keep `WechatExporter.exe`, `WechatExporterCLI.exe`, and `_internal` in their distributed locations. The GUI looks for the exact sibling name `WechatExporterCLI.exe` when it starts initialization, export, download, or API workflows.
+Use the smallest interface and data scope that satisfies the request. Do not use the website as a WeChat-data interface.
 
 ## Authorization and account preflight
 
-WechatExporter uses three gates: product authorization, account initialization, then data access. GUI and CLI share the same device license and account profiles.
+WechatExporter has three gates: product authorization, account initialization, then feature access.
 
-Check authorization from the CLI:
+For MCP:
 
-```text
-WechatExporterCLI.exe license status --json-output
-```
+1. Call `wechat_list_accounts`.
+2. Select exactly one profile with `account` or `config_path`; never set both.
+3. Call `wechat_status` for that profile.
 
-For offline recovery:
-
-```text
-WechatExporterCLI.exe license export-request device-request.wexr
-WechatExporterCLI.exe license import license.wexl
-```
-
-Use `WechatExporterCLI.exe license refresh` for an existing online license. For a new online activation, prefer the administrator-only GUI flow. If CLI activation is explicitly required, run `license activate` without `--code` so the program prompts securely; never expose an activation code in chat, logs, or process arguments.
-
-If an interface returns a `license_*` error, stop data calls and resolve authorization first. If authorization is valid but no account is listed, complete account initialization in the GUI or run CLI `init` only after explicit user confirmation with Windows WeChat logged in.
-
-## MCP
-
-Start the stdio server:
-
-```text
-<install-dir>\WechatExporterCLI.exe mcp
-```
-
-Tools:
-
-- `wechat_list_accounts`
-- `wechat_status`
-- `wechat_sessions`
-- `wechat_history`
-- `wechat_search`
-- `wechat_contacts`
-- `wechat_official_accounts`
-- `wechat_finder_candidates`
-- `wechat_group_members`
-- `wechat_stats`
-- `wechat_export_chat`
-- `wechat_export_all`
-- `wechat_export_articles`
-- `wechat_download_finder_video`
-
-Select an account with `account`, or an explicit configuration with `config_path`. Do not set both.
-
-## Local HTTP API
-
-Start the server:
-
-```text
-WechatExporterCLI.exe serve
-```
-
-The default base URL is `http://127.0.0.1:8731/api/v1`. Health is public on the local listener; all data endpoints require either `Authorization: Bearer <token>` or `X-API-Key: <token>`.
-
-The generated token is stored in `~/.wechat-exporter/api-token`. Never print it in logs or responses. Interactive OpenAPI documentation is at `http://127.0.0.1:8731/docs`.
-
-Key routes:
-
-- `GET /health`
-- `GET /license/status`
-- `GET /accounts`
-- `GET /status`
-- `GET /sessions`
-- `GET /unread`
-- `GET /history/{chat_name}`
-- `POST /search`
-- `GET /contacts`
-- `GET /official-accounts`
-- `GET /finder-candidates`
-- `GET /members/{group_name}`
-- `GET /stats/{chat_name}`
-- `GET /chat-map`
-- `GET /favorites`
-- `POST /exports`
-- `POST /exports/all`
-- `POST /exports/articles`
-- `POST /exports/finder-video`
-- `GET /jobs/{job_id}`
-
-Exports are asynchronous. Poll the returned job identifier until `completed` or `failed`.
-
-## CLI
+For CLI:
 
 ```text
 WechatExporterCLI.exe license status --json-output
-WechatExporterCLI.exe unread --limit 20 --format text
-WechatExporterCLI.exe new-messages --format text
-WechatExporterCLI.exe sessions --limit 20
-WechatExporterCLI.exe history "chat name" --limit 50
-WechatExporterCLI.exe search "keyword" --chat "chat name"
-WechatExporterCLI.exe contacts --query "name"
-WechatExporterCLI.exe chat-map --groups-only
-WechatExporterCLI.exe favorites --limit 20 --format text
-WechatExporterCLI.exe official-accounts --query "name"
-WechatExporterCLI.exe finder-candidates --source all
-WechatExporterCLI.exe members "group name"
-WechatExporterCLI.exe stats "chat name"
-WechatExporterCLI.exe export "chat name" --output chat.md
-WechatExporterCLI.exe export-articles "official account" --download --resume
-WechatExporterCLI.exe export-articles "official account" --source wmpf --download --resume
-WechatExporterCLI.exe finder-download
-WechatExporterCLI.exe finder-download-cards --object-id "video object id" --incremental
-WechatExporterCLI.exe finder-download-cards --all --incremental
-WechatExporterCLI.exe finder-download-account --username "Channels ID" --nickname "name" --incremental
+WechatExporterCLI.exe --account ACCOUNT_ID account-id
 ```
 
-`finder-candidates` and `wechat_finder_candidates` report locally observed candidates, not a complete following list.
+For HTTP:
 
-- `finder-download` and `wechat_download_finder_video` require explicit approval and a target video actively playing in Windows WeChat.
-- Prefer one or more `--object-id` values for card downloads. Use `--all` only when the user explicitly requests the full bounded list.
-- Before `finder-download-account`, require the exact Channels profile page to be open, verify `--username`, prefer `--incremental`, and warn that scrolling needs exclusive mouse control.
-- Before WMPF article scanning, require explicit approval and the selected official account's real profile page to be open; the scan also needs exclusive mouse control. Both full and incremental scans traverse from a verified top to a verified viewport end. If that scan already completed but body downloads remain unfinished, incremental `--resume --download` reuses `articles.scan.json` and continues the missing bodies without reopening or rescanning the profile page. GUI workflows stream each scan/download line while the child runs.
+1. Call `GET /api/v1/license/status` with the local API token.
+2. Call `GET /api/v1/accounts`.
+3. Call `GET /api/v1/status?account=ACCOUNT_ID`.
 
-Downloaded articles use `pages/<date_title_article-id>/article.html`, `article.md`, and `article.json`, plus a per-article image directory. A download or resume run migrates the legacy flat `pages` layout automatically.
+On a `license_*` error, stop data calls. Direct the user to the GUI's **Product Authorization** page or the CLI recovery commands. Never request an activation code in chat or put it in process arguments. If no account exists, use GUI initialization; invoke CLI `init` only after explicit confirmation and while Windows WeChat is logged in.
 
-Use global `--account ACCOUNT_ID` or `--config CONFIG_PATH` before the subcommand to select a non-default profile.
+## Capability routing
+
+| Task | MCP | HTTP API | CLI fallback |
+|---|---|---|---|
+| Accounts/readiness | `wechat_list_accounts`, `wechat_status` | `/accounts`, `/status` | `account-id` |
+| Sessions/unread/changes | `wechat_sessions`, `wechat_unread`, `wechat_new_messages` | `/sessions`, `/unread`, `/new-messages` | `sessions`, `unread`, `new-messages` |
+| History/search | `wechat_history`, `wechat_search` | `/history/{chat_name}`, `/search` | `history`, `search` |
+| Contacts/favorites/map | `wechat_contacts`, `wechat_favorites`, `wechat_chat_map` | `/contacts`, `/favorites`, `/chat-map` | same named CLI commands |
+| Groups/statistics | `wechat_group_members`, `wechat_stats` | `/members/{group_name}`, `/stats/{chat_name}` | `members`, `stats` |
+| Official accounts/articles | `wechat_official_accounts`, `wechat_export_articles` | `/official-accounts`, `/exports/articles` | `official-accounts`, `export-articles` |
+| Channels discovery | `wechat_finder_candidates`, `wechat_finder_video_cards` | `/finder-candidates`, `/finder-video-cards` | `finder-candidates` |
+| Chat export | `wechat_export_chat`, `wechat_export_all` | `/exports`, `/exports/all` | `export`, `export-all` |
+| Channels download | three `wechat_download_finder_*` tools | three `/exports/finder-*` routes | three `finder-download*` commands |
+| Initialization/image-key/license | Not exposed | License status only | `init`, `image-key`, `license` or GUI |
+
+## Fallback and error handling
+
+- If MCP is unavailable or a client version lacks a tool, use the authenticated API or exact CLI equivalent; never fabricate an MCP call.
+- If exact CLI flags are required, read `cli.md`; do not guess defaults.
+- If an HTTP schema is required, read `api.md` or the running local OpenAPI document at `http://127.0.0.1:8731/docs`.
+- Start with `limit=20` for lists/search and `limit=50` for history. Paginate rather than requesting unbounded results.
+- Resolve ambiguous display names through sessions, contacts, or chat map and retry with the returned internal `username`.
+- Ask before media export, bulk export, network download, WMPF scrolling, or Channels account scanning unless the user explicitly requested that exact operation.
+- A Channels candidate list is local evidence, not a following list. Never label it as complete.
+- `new-messages` stores a checkpoint and reports changed session summaries; use history to recover all messages in the interval.

@@ -3,10 +3,22 @@
 from __future__ import annotations
 
 import argparse
+import re
 import shutil
 from pathlib import Path
 
-from validate_skill import REPO_ROOT, SKILL_RELATIVE_FILES, SKILL_ROOT, validate
+from validate_skill import (
+    API_ROUTES,
+    CLI_COMMANDS,
+    MCP_TOOLS,
+    REPO_ROOT,
+    SKILL_RELATIVE_FILES,
+    SKILL_ROOT,
+    documented_api_routes,
+    documented_cli_commands,
+    documented_mcp_tools,
+    validate,
+)
 
 
 def _resolve_client_root(value: str | None) -> Path:
@@ -38,6 +50,51 @@ def _unexpected_files(mirror: Path) -> list[str]:
         if path.is_file()
     }
     return sorted(actual - expected)
+
+
+def check_interface_parity(client_root: Path) -> None:
+    """Reject Skill documentation that has drifted from the client surfaces."""
+    main_source = (client_root / "wechat_exporter" / "main.py").read_text(
+        encoding="utf-8"
+    )
+    registered = set(re.findall(r"^cli\.add_command\((\w+)\)\s*$", main_source, re.M))
+    client_commands = {
+        "license" if name == "license_command" else name.replace("_", "-")
+        for name in registered
+    }
+
+    mcp_source = (client_root / "wechat_exporter" / "mcp_server.py").read_text(
+        encoding="utf-8"
+    )
+    client_tools = set(
+        re.findall(r"name\s*=\s*[\"'](wechat_[a-z0-9_]+)[\"']", mcp_source)
+    )
+
+    api_source = (client_root / "wechat_exporter" / "api.py").read_text(
+        encoding="utf-8"
+    )
+    client_routes = {
+        (method.upper(), route)
+        for method, route in re.findall(
+            r"@app\.(get|post)\(\s*[\"']([^\"']+)[\"']", api_source, re.S
+        )
+    }
+
+    comparisons = (
+        ("CLI commands", client_commands, CLI_COMMANDS, documented_cli_commands()),
+        ("MCP tools", client_tools, MCP_TOOLS, documented_mcp_tools()),
+        ("API routes", client_routes, API_ROUTES, documented_api_routes()),
+    )
+    for label, client_values, expected_values, documented_values in comparisons:
+        if client_values != expected_values or documented_values != expected_values:
+            raise ValueError(
+                f"{label} parity mismatch; client={sorted(client_values)}, "
+                f"expected={sorted(expected_values)}, documented={sorted(documented_values)}"
+            )
+    print(
+        "[ok] interface parity: "
+        f"CLI={len(client_commands)}, MCP={len(client_tools)}, API={len(client_routes)}"
+    )
 
 
 def write_mirror(client_root: Path, digest: str) -> None:
@@ -97,6 +154,7 @@ def main(argv: list[str] | None = None) -> int:
         raise FileNotFoundError(
             f"WechatExporter Windows client repository not found: {client_root}"
         )
+    check_interface_parity(client_root)
     if options.write:
         write_mirror(client_root, digest)
     else:
