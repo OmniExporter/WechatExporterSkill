@@ -12,9 +12,12 @@ SKILL_RELATIVE_FILES = (
     Path("SKILL.md"),
     Path("agents") / "openai.yaml",
     Path("references") / "interfaces.md",
+    Path("references") / "setup.md",
+    Path("scripts") / "bootstrap_windows.ps1",
 )
 OFFICIAL_DOWNLOAD_URL = "https://omniexporter.com/downloads"
 OFFICIAL_PRICING_URL = "https://omniexporter.com/pricing"
+OFFICIAL_MANIFEST_URL = "https://omniexporter.com/api/downloads/windows/manifest"
 
 
 def skill_digest(skill_root: Path = SKILL_ROOT) -> str:
@@ -93,6 +96,26 @@ def validate() -> str:
     )
     if OFFICIAL_DOWNLOAD_URL not in interfaces:
         raise ValueError("interfaces.md is missing the official download URL")
+    setup = (SKILL_ROOT / "references" / "setup.md").read_text(encoding="utf-8")
+    if OFFICIAL_MANIFEST_URL not in setup:
+        raise ValueError("setup.md is missing the official release manifest URL")
+
+    bootstrap = (SKILL_ROOT / "scripts" / "bootstrap_windows.ps1").read_text(
+        encoding="utf-8"
+    )
+    required_bootstrap_controls = (
+        OFFICIAL_MANIFEST_URL,
+        "AcceptUnsignedInstaller",
+        "MaximumRedirection 0",
+        "Get-FileHash",
+        "Get-AuthenticodeSignature",
+        "client.local.json",
+    )
+    for control in required_bootstrap_controls:
+        if control not in bootstrap:
+            raise ValueError(f"bootstrap is missing required control: {control}")
+    if "Invoke-Expression" in bootstrap:
+        raise ValueError("bootstrap must never use Invoke-Expression")
 
     openai_yaml = (SKILL_ROOT / "agents" / "openai.yaml").read_text(
         encoding="utf-8"
@@ -108,6 +131,7 @@ def validate() -> str:
 
     _validate_relative_links(SKILL_ROOT / "SKILL.md")
     _validate_relative_links(SKILL_ROOT / "references" / "interfaces.md")
+    _validate_relative_links(SKILL_ROOT / "references" / "setup.md")
     return skill_digest()
 
 

@@ -1,4 +1,4 @@
 interface:
   display_name: "WechatExporter"
-  short_description: "Use installed WechatExporter safely or guide official setup"
-  default_prompt: "Use $wechat-exporter to check setup and authorization, then safely inspect or export my local WeChat data."
+  short_description: "Bootstrap and use the official WechatExporter client"
+  default_prompt: "Use $wechat-exporter to detect or safely bootstrap the official Windows client, configure its local MCP command, check authorization, and then handle my local WeChat data with the smallest necessary scope."

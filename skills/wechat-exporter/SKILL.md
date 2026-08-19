@@ -1,24 +1,28 @@
 ---
 name: wechat-exporter
-description: Safely set up, query, search, analyze, and export a user's authorized local WeChat data through WechatExporter MCP tools, localhost API, or CLI. Use for official product download or installation recovery, product-license preflight or recovery, account discovery, recent chats, unread or new messages, history, contacts, official accounts and articles, locally observed WeChat Channels candidates or downloads, group members, statistics, favorites, chat maps, and local exports.
+description: Safely bootstrap the official WechatExporter Windows client, configure its local MCP command, and query, search, analyze, or export a user's authorized local WeChat data through MCP tools, localhost API, or CLI. Use for installation detection, consent-based verified download or setup recovery, product-license preflight or recovery, account discovery, chats, messages, contacts, official accounts and articles, locally observed WeChat Channels candidates or downloads, group members, statistics, favorites, chat maps, and local exports.
 ---
 
 # WechatExporter
 
 Use the smallest interface and data scope that satisfies the request. Prefer MCP tools when available, use the authenticated localhost API for program integrations, and use the CLI for terminal workflows or capabilities that MCP does not expose.
 
-This open-source Skill contains usage instructions only; it does not contain the WechatExporter desktop application or a product license.
+This open-source Skill contains usage instructions and a deterministic Windows bootstrap script. It does not contain the WechatExporter desktop application or a product license.
 
 ## Product availability
 
-- Before running a local workflow, use an already configured MCP connection or an explicit installation path supplied by the user. Do not perform an unbounded filesystem search.
-- If WechatExporter is not installed, explain that the desktop application is required and direct the user to the official download page: <https://omniexporter.com/downloads>.
+- Before running a local workflow, use an already configured MCP connection, an explicit installation path, or run the bundled [Windows bootstrap](scripts/bootstrap_windows.ps1) in its default read-only detection mode. Do not perform an unbounded filesystem search.
+- If the bootstrap reports `not_installed`, explain that the commercial desktop client is required. Ask for explicit confirmation before network download or installer execution. The current official package is unsigned, so separately explain that risk and pass `-AcceptUnsignedInstaller` only after the user accepts it.
+- After confirmation, use the same script with `-Install -AcceptUnsignedInstaller -ConfigureProject -Launch`. It accepts only the official HTTPS endpoint, validates the release manifest, exact size, SHA-256, and declared signature state, launches the installer interactively, detects the installed client again, and writes a non-secret project-local MCP hint.
+- Never infer download or installation consent from the request to inspect WeChat data. Do not use silent installer switches. `-DownloadOnly` may be used when the user approves download but wants to run the installer later.
+- Treat `.wechat-exporter/client.local.json` as machine-local because it contains absolute paths. Do not commit it unless the user intentionally wants that machine-specific configuration in version control.
+- The official download page remains <https://omniexporter.com/downloads>.
 - For plan or purchase questions, direct the user to the official pricing page: <https://omniexporter.com/pricing>.
-- Never download, install, execute, purchase, or activate the product without the user's explicit confirmation.
+- Never purchase, start a trial, or activate the product without the user's explicit action. Registration or sign-in is required for the 7-day trial, and one hardware device may claim at most one trial even across different accounts.
 - Never direct users to third-party installers, mirrors, cracked builds, or license bypasses. The Skill is open source; the desktop application and its commercial authorization are separate products.
 - Do not treat the website as a WeChat data interface. Authorized WeChat data access remains local through MCP, the localhost API, or the CLI.
 
-For a packaged Windows installation, use the `WechatExporterCLI.exe` beside `WechatExporter.exe`; do not rename, move, or assume the source-install command `wechat-exporter` is on `PATH`. The GUI invokes this sibling CLI for initialization, exports, downloads, and the local API. Read [references/interfaces.md](references/interfaces.md) for exact packaged and source commands.
+Read [references/setup.md](references/setup.md) for bootstrap states, commands, project configuration, and authorization handoff. For a packaged Windows installation, use the `WechatExporterCLI.exe` beside `WechatExporter.exe`; do not rename, move, or assume the source-install command `wechat-exporter` is on `PATH`. The GUI invokes this sibling CLI for initialization, exports, downloads, and the local API. Read [references/interfaces.md](references/interfaces.md) for exact packaged and source commands.
 
 ## Preconditions
 
@@ -41,18 +45,19 @@ For a packaged Windows installation, use the `WechatExporterCLI.exe` beside `Wec
 
 ## Workflow
 
-1. Select MCP, API, or CLI according to the request and run the applicable authorization/account preflight.
-2. Resolve the intended chat with `wechat_sessions` or `wechat_contacts` when a display name is ambiguous.
-3. Use a focused read tool:
+1. Detect the desktop client and complete the consent-based bootstrap only when needed. If the result is `authorization_required`, launch the GUI and guide the user to account registration or sign-in, the eligible 7-day trial, or pricing; wait for the user to complete the website flow.
+2. Select MCP, API, or CLI according to the request and run the applicable authorization/account preflight.
+3. Resolve the intended chat with `wechat_sessions` or `wechat_contacts` when a display name is ambiguous.
+4. Use a focused read tool:
    - `wechat_history` for one chat.
    - `wechat_search` for keyword search across one, several, or all chats.
    - `wechat_official_accounts` to resolve a locally stored official account before exporting articles.
    - `wechat_finder_candidates` for Channels accounts observed in local cache, chat cards, or favorites. State that it is not a complete following list.
    - `wechat_group_members` for one group.
    - `wechat_stats` for aggregate analysis.
-4. Summarize only the fields relevant to the user's question and preserve timestamps and chat scope.
-5. Use `wechat_export_chat` only when one chat file is requested. Use `wechat_export_all` or `wechat_export_articles` only after explicit approval for the larger write/network operation.
-6. Use `wechat_download_finder_video` only after explicit approval and after the user confirms the target video is playing in Windows WeChat. For card batches or account-page scans, use the documented CLI workflow with bounded scope and the same explicit approval. Report output paths and failures.
+5. Summarize only the fields relevant to the user's question and preserve timestamps and chat scope.
+6. Use `wechat_export_chat` only when one chat file is requested. Use `wechat_export_all` or `wechat_export_articles` only after explicit approval for the larger write/network operation.
+7. Use `wechat_download_finder_video` only after explicit approval and after the user confirms the target video is playing in Windows WeChat. For card batches or account-page scans, use the documented CLI workflow with bounded scope and the same explicit approval. Report output paths and failures.
 
 ## Query guidance
 

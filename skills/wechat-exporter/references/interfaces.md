@@ -2,12 +2,12 @@
 
 ## Installation and official acquisition
 
-This Skill does not contain the desktop application. If neither an existing MCP configuration nor a user-supplied installation path resolves `WechatExporterCLI.exe`, stop the data workflow and direct the user to:
+This Skill does not contain the desktop application. If neither an existing MCP configuration nor a user-supplied installation path resolves `WechatExporterCLI.exe`, run the bundled `scripts/bootstrap_windows.ps1` in its default read-only mode. Read [setup.md](setup.md) for its bounded discovery, consent, integrity, installer, project-configuration, and authorization states.
 
 - Official download: <https://omniexporter.com/downloads>
 - Plans and pricing: <https://omniexporter.com/pricing>
 
-Do not download or run an installer without explicit user confirmation. Do not use third-party mirrors or treat the open-source Skill as a replacement for a valid product license. After installation, use the exact CLI located beside `WechatExporter.exe`; do not move it out of the installed directory.
+Do not download or run an installer without explicit user confirmation. The official package is currently unsigned; pass `-AcceptUnsignedInstaller` only after explaining that risk and receiving explicit acceptance. The bootstrap accepts only the official HTTPS endpoint and verifies exact size, SHA-256, and signature state before starting the interactive installer. Do not use third-party mirrors or treat the open-source Skill as a replacement for a valid product license. After installation, use the exact CLI located beside `WechatExporter.exe`; do not move it out of the installed directory.
 
 Choose the command that matches the installation:
 

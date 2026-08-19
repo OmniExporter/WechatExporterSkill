@@ -11,6 +11,8 @@ An open-source Agent Skill that helps AI agents use the WechatExporter Windows d
 ## What this Skill does
 
 - Checks whether WechatExporter is installed, initialized, and authorized before accessing data.
+- Detects the official Windows client in bounded locations and, after explicit consent, downloads, verifies, and starts its interactive installer.
+- Writes a non-secret project-local MCP hint so an agent can reuse the exact packaged CLI path.
 - Discovers local WeChat accounts that the user has explicitly configured.
 - Works with sessions, messages, contacts, official accounts, Channels candidates, group members, statistics, and favorites.
 - Guides controlled exports of chats, articles, and videos.
@@ -21,12 +23,12 @@ The Skill is open source. The WechatExporter desktop application and its commerc
 
 ## Requirements
 
-- Windows with the WechatExporter desktop application installed.
+- Windows x64. The Skill can assist with installing the WechatExporter desktop application when it is missing.
 - A local WeChat account initialized in WechatExporter.
 - A compatible AI agent that supports folder-based Skills.
 - A valid product authorization when the requested feature or plan requires one.
 
-If the application is not installed, visit the [official download page](https://omniexporter.com/downloads). Review [plans and pricing](https://omniexporter.com/pricing) when commercial authorization is required.
+If the application is not installed, the Skill can use the verified official bootstrap below. You can also visit the [official download page](https://omniexporter.com/downloads). Review [plans and pricing](https://omniexporter.com/pricing) when commercial authorization is required.
 
 ## Install the Skill
 
@@ -50,6 +52,29 @@ Copy-Item -Recurse -Force ".\WechatExporterSkill\skills\wechat-exporter\*" $skil
 ```
 
 Restart or refresh Codex after copying the Skill. For another compatible agent, copy the same `skills/wechat-exporter` folder into that agent's configured Skill location.
+
+## Bootstrap the Windows client
+
+Detection is read-only and emits JSON:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File ".\skills\wechat-exporter\scripts\bootstrap_windows.ps1" `
+  -ProjectRoot "$PWD"
+```
+
+If it reports `not_installed`, an agent must explain the download and ask before continuing. After approval, it can run the official interactive installer, detect the result, write `.wechat-exporter/client.local.json`, and open the client:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File ".\skills\wechat-exporter\scripts\bootstrap_windows.ps1" `
+  -ProjectRoot "$PWD" `
+  -Install `
+  -ConfigureProject `
+  -Launch
+```
+
+The current official installer is unsigned. Add `-AcceptUnsignedInstaller` only after the user explicitly accepts the Windows unknown-publisher risk. Before execution, the script restricts acquisition to `omniexporter.com` and verifies the official manifest, exact size, full SHA-256 digest, and declared signature state. It does not use silent installation switches.
+
+The generated `client.local.json` contains machine-local absolute paths and no secrets. Do not commit it unless that machine-specific configuration is intentional.
 
 ## Connect through MCP
 
@@ -77,6 +102,8 @@ The agent should begin with bounded, read-only queries. It must ask for confirma
 - Never expose database keys, API tokens, activation codes, refresh credentials, device private keys, or license storage.
 - Never ask the user to paste an activation code into chat.
 - Never use third-party mirrors, cracked builds, or license bypasses.
+- Never download or start the installer without user confirmation; never pre-accept the unsigned-package risk for another user.
+- Never register, sign in, start a trial, or purchase on the user's behalf. The eligible trial is 7 days, requires an account, and is limited to one claim per hardware device even across accounts.
 - Do not enable network-wide API listening without explicit, informed confirmation.
 - Treat the OmniExporter website as the official product and account portal, not as a WeChat data interface.
 
@@ -89,10 +116,14 @@ WechatExporterSkill/
 │       ├── SKILL.md
 │       ├── agents/
 │       │   └── openai.yaml
+│       ├── scripts/
+│       │   └── bootstrap_windows.ps1
 │       └── references/
-│           └── interfaces.md
+│           ├── interfaces.md
+│           └── setup.md
 ├── scripts/
 │   ├── sync_client_mirror.py
+│   ├── test_bootstrap.py
 │   └── validate_skill.py
 └── README.zh-CN.md
 ```
@@ -105,6 +136,12 @@ Validate the canonical Skill:
 
 ```powershell
 python .\scripts\validate_skill.py
+```
+
+Run the offline bootstrap smoke tests (they do not download or install anything):
+
+```powershell
+python .\scripts\test_bootstrap.py
 ```
 
 Check that the WechatExporter desktop repository contains the exact generated mirror and matching content hash:
